@@ -1,7 +1,6 @@
-<!-- Copyright (c) 2011-2013 GemTalk Systems LLC. All Rights Reserved. -->
+Copyright (c) 2011-2013 GemTalk Systems LLC. All Rights Reserved.
 
-WebTools is being moved to Github.com where it can be shared and managed 
-separately from the regular GemStone/S 64 Bit releases.
+WebTools is available at https://github.com/jgfoster/webtools
 
 WebTools has been developed and tested on Chrome (version 22).
 WebTools requires the HTML canvas API to draw statmonitor graphics.
