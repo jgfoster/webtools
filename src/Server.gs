@@ -96,7 +96,7 @@ set compile_env: 0
 method: Server
 doAnswer
 
-	| string |
+	| string numWritten |
 	string := stream contents.
 	stream := (WriteStream on: String new)
 		nextPutAll: 'HTTP/1.1 ';
@@ -115,23 +115,24 @@ doAnswer
 	].
 	stream
 		cr; lf;
-		nextPutAll: string; cr; lf;
+		nextPutAll: string;
 		yourself.
 	socket writeWillNotBlock ifFalse: [self error: 'socket write will block'].
 	string := stream contents.
-	1 to: string size by: 10000 do: [:i | 
-		| chunk numWritten |
-		chunk := string copyFrom: i to: (i + 9999 min: string size).
-		numWritten := socket write: chunk.
-		numWritten == chunk size ifFalse: [
-			socket close. 
-			string := 'Tried to write ' , string size printString , ', but wrote ' , numWritten printString.
-			GsFile stdout nextPutAll: string.
-			self error: string.
-			^self.
-		].
+	numWritten := socket 			
+		linger: true length: 60; "wait up to a minute for data to finish writing"
+		write: string.
+	socket shutdownWriting.
+	[	"it seems that linger is not sufficient"
+		(Delay forSeconds: 5) wait.
+		socket close.
+	] fork.
+	numWritten == string size ifFalse: [
+		string := 'Tried to write ' , string size printString , ', but wrote ' , numWritten printString.
+		GsFile stdout nextPutAll: string.
+		self error: string.
+		^self.
 	].
-	socket close.
 %
 category: 'Request Handler'
 set compile_env: 0
