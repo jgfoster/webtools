@@ -91,7 +91,7 @@ GemStone = function() {	//	hide everything inside an anonymous function to isola
 					'GET'
 				,	$(this).attr('title')
 				,	null
-				,	function(html) { $('body').append(html); } 
+				,	function(html) { $('body').append("<div class='temp'>" + html + "</div>"); } 
 				);
 			}
 		}
@@ -100,20 +100,25 @@ GemStone = function() {	//	hide everything inside an anonymous function to isola
 	function addTab(tool) {
 		var destination = '#' + getNextId();
 		var source = destination + 'a';
+		var tabHTML = "<li id='" + destination.substring(1) + "t'>" + 
+						"<a href='" + destination + "'>" + tool.label + "</a></li>";
+		var panelHTML = "<div id='" + destination.substring(1) + "' class='hidden'></div>";
 		$('#' + tool.id).attr('id', source.substring(1));
 		moveOnlyOnce($(source));
-		$tabs.tabs('add', destination, tool.label);
+		$(tabHTML).appendTo($(".ui-tabs-nav", $tabs));
+		$(panelHTML).appendTo("#tabs");
+		$tabs.tabs("refresh");
 		$(destination).addClass($(source).attr('class'));
 		$(source).children().each(function() {
 			var clone = $(this).clone();
 			$(clone).appendTo(destination);
 		});
-		$(source).remove();
+		$(".temp").remove();
 		var $listItem = $('> ul > li:last', $tabs);
 		$listItem.attr('title', tool.title);
 		addCloseButton($listItem);
 		$(destination).data('tool', tool);
-		$tabs.tabs('select', destination);
+		$tabs.tabs( "option", "active", -1 );
 		if (tool.onAdd) { tool.onAdd($(destination)); }
 		return;
 
@@ -127,7 +132,9 @@ GemStone = function() {	//	hide everything inside an anonymous function to isola
 				,	index = list.index($listItem)
 				;
 				$(destination).remove();
-				$tabs.tabs('remove', index);
+				$(destination + "t").remove();
+				$tabs.tabs( "option", "active", 0);
+				$tabs.tabs("refresh");
 				event.preventDefault();
 			}
 		};
@@ -347,16 +354,11 @@ GemStone = function() {	//	hide everything inside an anonymous function to isola
 		return;
 
 		function setColumnWidths($header, $body) {
-			if (0 === $('thead tr th.filler', $header).length) {
-				// add a column to sit over the scrollbar
-				$('thead tr', $header).append('<th class="filler"></th>');
-			}
 			var emptyBody   = 0 === $('tbody tr', $body).length
 			,	columnCount = $('thead tr th', $body).length - 1
 			;
 			$('thead', $body).removeClass('hide');
 			clearWidths($header);
-			$('thead tr th.filler', $header).css('width', '18px');	// width of scrollbar
 			clearWidths($body);
 			if (emptyBody) {	// ensure that there is at least one row in the body
 				$('tbody', $body).append('<tr />');
@@ -392,9 +394,6 @@ GemStone = function() {	//	hide everything inside an anonymous function to isola
 				$element.css({'table-layout': 'fixed', 'width': total});
 			}
 			function calculateWidth(td) {	
-				if ($.browser.chrome) 	{ return $(td).width() + 1; 		}
-				if ($.browser.mozilla) 	{ return $(td).width();				}
-				if ($.browser.msie) 	{ return $(td).outerWidth() - 1; 	}
 				return $(td).width();
 			}
 		}	

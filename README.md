@@ -8,11 +8,11 @@ Components
 
 WebTools depends on various third-party components that are licensed by their respective owners.
 
-- CodeMirror v3.0 [web](http://codemirror.net/) [license](http://codemirror.net/LICENSE)
-- Flot v0.7 [web](http://www.flotcharts.org/) [license](https://github.com/flot/flot/blob/master/LICENSE.txt)
+- CodeMirror v3.18 [web](http://codemirror.net/) [license](http://codemirror.net/LICENSE)
+- Flot v0.8.1 [web](http://www.flotcharts.org/) [license](https://github.com/flot/flot/blob/master/LICENSE.txt)
 - jjmenu v1.1.2 [web](http://jursza.net/dev/jjmenu/) [license](http://www.opensource.org/licenses/mit-license.php)
-- jQuery v1.8.2 [web](jquery.com) [license](jquery.org/license)
-- jQuery UI v1.8.23 [web](http://jqueryui.com/) [license](https://github.com/jquery/jquery-ui/blob/master/MIT-LICENSE.txt)
+- jQuery v1.10.2 [web](jquery.com) [license](jquery.org/license)
+- jQuery UI v1.10.3 [web](http://jqueryui.com/) [license](https://github.com/jquery/jquery-ui/blob/master/MIT-LICENSE.txt)
 - jsTree v1.0-rc3 [web](http://www.jstree.com/) [license](http://www.opensource.org/licenses/mit-license.php)
 
 Supported Client Browsers
@@ -29,3 +29,8 @@ License
 -------
 
 WebTools components that are not otherwise licensed (see above) are Copyright (c) 2011-2013 by GemTalk Systems LLC and have their own [license](https://github.com/jgfoster/webtools/blob/master/licenses/WebTools.license). 
+
+Use
+---
+
+Start a Topaz session, log in, and then input $GEMSTONE/examples/www/installAndRun.tpz.
