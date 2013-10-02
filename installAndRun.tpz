@@ -1,6 +1,5 @@
 !-- Copyright (c) 2011-2013 GemTalk Systems LLC. All Rights Reserved. --
-input $GEMSTONE/examples/www/install.tpz
+input $WEBTOOLS/install.tpz
 run
 (GsSession currentSession userProfile symbolList last at: #'Server') runInForeground.
 %
-

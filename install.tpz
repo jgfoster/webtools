@@ -1,10 +1,12 @@
 !-- Copyright (c) 2011-2013 GemTalk Systems LLC. All Rights Reserved. --
-
+!
+! You need to be logged in before this works!
+!
 errorCount
 output push webtools.out only
 errorCount
 ifErr 1 stk
-! ifErr 2 logout
+ifErr 2 logout
 run
 | name userProfile symbolDictionary |
 name := #'WebTools'.
@@ -21,35 +23,35 @@ symbolDictionary isNil ifTrue: [
 ].
 userProfile insertDictionary: symbolDictionary at: 1.
 %
-input $GEMSTONE/examples/www/src/StatProcess.gs
+input $WEBTOOLS/src/StatProcess.gs
 errorCount
-input $GEMSTONE/examples/www/src/StatStatistic.gs
+input $WEBTOOLS/src/StatStatistic.gs
 errorCount
-input $GEMSTONE/examples/www/src/StatProcessType.gs
+input $WEBTOOLS/src/StatProcessType.gs
 errorCount
-input $GEMSTONE/examples/www/src/Statmonitor.gs
+input $WEBTOOLS/src/Statmonitor.gs
 errorCount
-input $GEMSTONE/examples/www/src/Tool.gs
+input $WEBTOOLS/src/Tool.gs
 errorCount
-input $GEMSTONE/examples/www/src/Server.gs
+input $WEBTOOLS/src/Server.gs
 errorCount
-input $GEMSTONE/examples/www/src/VersionReport.gs
+input $WEBTOOLS/src/VersionReport.gs
 errorCount
-input $GEMSTONE/examples/www/src/SessionList.gs
+input $WEBTOOLS/src/SessionList.gs
 errorCount
-input $GEMSTONE/examples/www/src/CodeBrowser.gs
+input $WEBTOOLS/src/CodeBrowser.gs
 errorCount
-input $GEMSTONE/examples/www/src/Statistics.gs
+input $WEBTOOLS/src/Statistics.gs
 errorCount
-input $GEMSTONE/examples/www/src/MethodList.gs
+input $WEBTOOLS/src/MethodList.gs
 errorCount
-input $GEMSTONE/examples/www/src/Workspace.gs
+input $WEBTOOLS/src/Workspace.gs
 errorCount
-input $GEMSTONE/examples/www/src/ObjectLog.gs
+input $WEBTOOLS/src/ObjectLog.gs
 errorCount
-input $GEMSTONE/examples/www/src/Debugger.gs
+input $WEBTOOLS/src/Debugger.gs
 errorCount
-input $GEMSTONE/examples/www/src/SharedPageCache.gs
+input $WEBTOOLS/src/SharedPageCache.gs
 errorCount
 run
 | symbolList symbolDictionary |
@@ -65,4 +67,3 @@ errorCount
 output pop
 ! return from webtools.out
 errorCount
-

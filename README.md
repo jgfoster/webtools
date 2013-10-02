@@ -1,7 +1,21 @@
 WebTools for GemStone/S 64 Bit
 ========
 
-WebTools provides a HTML-based user interface for a suite of tools for GemStone/S. It may be installed in 
+WebTools provides a HTML-based user interface for a suite of tools for GemStone/S. To use WebTools, clone the code, set an environment variable, start Topaz, login (you may need to edit the user, password, and stone name), and install the code:
+
+    git clone https://github.com/jgfoster/webtools.git
+    cd webtools
+    export WEBTOOLS=`pwd`
+    topaz -i -l -T 50000 << EOF
+    set username: DataCurator 
+    set password: swordfish 
+    set gemstone: gs64stone1
+    login
+    input $WEBTOOLS/installAndRun.tpz
+    EOF
+
+At this point you should be able to launch a web browser and start interacting with the tools. 
+
 
 Components
 ----------
@@ -29,8 +43,3 @@ License
 -------
 
 WebTools components that are not otherwise licensed (see above) are Copyright (c) 2011-2013 by GemTalk Systems LLC and have their own [license](https://github.com/jgfoster/webtools/blob/master/licenses/WebTools.license). 
-
-Use
----
-
-Start a Topaz session, log in, and then input $GEMSTONE/examples/www/installAndRun.tpz.
