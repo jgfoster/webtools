@@ -68,9 +68,9 @@ method: SessionList
 json
 
 	^Dictionary new
-		at: 'labels' 		put: self _sessionListLabels;
+		at: 'labels' 	put: self _sessionListLabels;
 		at: 'sessions' 	put: self _sessionList;
-		at: 'other' 		put: self _nonSessionList;
+		at: 'other' 	put: self _nonSessionList;
 		yourself.
 %
 category: 'Public'

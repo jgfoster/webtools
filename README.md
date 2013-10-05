@@ -9,7 +9,7 @@ WebTools provides a HTML-based user interface for a suite of tools for GemStone/
     topaz -i -l -T 50000 << EOF
     set username: DataCurator 
     set password: swordfish 
-    set gemstone: gs64stone1
+    set gemstone: gs64stone
     login
     input $WEBTOOLS/installAndRun.tpz
     EOF

@@ -49,7 +49,7 @@ GemStone.saveScript('scripts/MethodList.js', function(search) {
 			.append(items.join(''));
 		$('.methodList .tableBody', $tabPanel).scrollTop(0);
 		$('.tableBody tbody .method', $tabPanel).click(clickedOnMethod);
-		$(window).resize();		//	force resize to update column widths
+		GemStone.activateLastTab();
 	}
 
 	function clickedOnMethod(event) {

@@ -5,40 +5,41 @@
 */
 
 GemStone = function() {	//	hide everything inside an anonymous function to isolate namespace
-	var requestCount = 0	//	keep a cumulative count of round-trips to server
-	,	tools = {}
-	,	$tabs
-	,	$statusBar
-	,	nextId = 0
-	,	scripts = {}
-	;
+	var requestCount = 0,	//	keep a cumulative count of round-trips to server
+		tools = {},
+		$tabs,
+		$statusBar,
+		nextId = 0,
+		scripts = {};
 	
 	$(document).ready(onDocumentReady);
 
 	return {
-		addTab:		addTab		//	add a new tab panel
-	,	ajax:		ajax		//	wrapper for server call
-	,	browseImplementorsOf: 	browseImplementorsOf
-	,	browseReferencesTo: 	browseReferencesTo
-	,	browseSendersOf:		browseSendersOf
-	,	loadCSS:	loadCSS		//	add CSS link to head if not already present
-	,	menu:		menu		//	popup a dynamic context menu
-	,	nextId:		getNextId	//	unique HTML element identifier
-	,	runJs:		runJs		//	run a script
-	,	runJsOnce:	runJsOnce	//	run a script only if not yet run
-	,	saveScript:	saveScript	//	cache function to reuse without reloading
-	,	scroll:		scroll		//	add scrolling to a table
-	,	encodeHTML:	encodeHTML	//	escape for HTML display
-	,	decodeHTML:	decodeHTML	//	unescape HTML code
+		activateLastTab: 		activateLastTab,	//	adding a tab doesn't select it
+		addTab:					addTab,				//	add a new tab panel
+		ajax:					ajax,				//	wrapper for server call
+		browseImplementorsOf: 	browseImplementorsOf,
+		browseReferencesTo: 	browseReferencesTo,
+		browseSendersOf:		browseSendersOf,
+		loadCSS:				loadCSS,			//	add CSS link to head if not already present
+		menu:					menu,				//	popup a dynamic context menu
+		nextId:					getNextId,			//	unique HTML element identifier
+		runJs:					runJs,				//	run a script
+		runJsOnce:				runJsOnce,			//	run a script only if not yet run
+		saveScript:				saveScript,			//	cache function to reuse without reloading
+		scroll:					scroll,				//	add scrolling to a table
+		encodeHTML:				encodeHTML,			//	escape for HTML display
+		decodeHTML:				decodeHTML			//	unescape HTML code
 	}
-
+	
 	function onDocumentReady() {
 		$tabs = $('#tabs');
 		$statusBar = $('#statusBar');
-		createMainTabs();
+		$tabs.tabs({ activate: showTab });	//	create main tabs
 		ajax('GET', 'tools', null, gotTools);
-		$(window).resize(resize);	//	register to get resize events
+		$(window).resize(resizeWindow);		//	register to get resize events
 		createConsole();
+		$('body').append('<span class="ruler" style="display: inline-block;"></span>');
 		return;
 		
 		function createConsole() {
@@ -51,24 +52,6 @@ GemStone = function() {	//	hide everything inside an anonymous function to isola
 					};
 				} else {
 					console.log = function() {};
-				}
-			}
-		}
-		
-		function createMainTabs() {
-			$tabs.tabs({ show: showTab });
-			$('.ui-tabs-nav', $tabs)
-				.removeClass('ui-corner-all')
-				.addClass('ui-corner-top');
-			return;
-			
-			function showTab(event, ui) { 
-				var $tab = $('#' + ui.panel.id)
-				,	tool = $tab.data('tool')
-				;
-				$(window).resize();
-				if ( tool && tool.onShow ) {
-					tool.onShow($tab[0]);
 				}
 			}
 		}
@@ -95,31 +78,54 @@ GemStone = function() {	//	hide everything inside an anonymous function to isola
 				);
 			}
 		}
+		
+		function showTab(event, ui) { 
+			var list = $('.scrollingTable', ui.newPanel),
+				tool = ui.newPanel.data('tool');
+			if (0 < list.length) {
+				resizeTable(list[0]);
+			}
+			if ( tool && tool.onShow ) {
+				tool.onShow($tab[0]);
+			}
+		}
 	}
 
+	function activateLastTab() {
+		$tabs.tabs( "option", "active", -1 );
+	}
+	
+	// addTab() is called by the home tab when the user clicks on a row
+	// tool is an object with an id, label, title, and an onAdd() function
+	// at this point a new div (class="temp") will have been added to to the body 
+	// The new div should have a child with an id of tool.id
 	function addTab(tool) {
-		var destination = '#' + getNextId();
-		var source = destination + 'a';
-		var tabHTML = "<li id='" + destination.substring(1) + "t'>" + 
-						"<a href='" + destination + "'>" + tool.label + "</a></li>";
-		var panelHTML = "<div id='" + destination.substring(1) + "' class='hidden'></div>";
-		$('#' + tool.id).attr('id', source.substring(1));
-		moveOnlyOnce($(source));
+		var destinationId = getNextId();		// each tab needs a unique id
+		var sourceId = destinationId + 'a';
+		// create the HTML for the tab and panel
+		var tabHTML = "<li id='" + destinationId + "t'>" + 
+						"<a href='#" + destinationId + "'>" + tool.label + "</a></li>";
+		var panelHTML = "<div id='" + destinationId + "' class='hidden'></div>";
+		// change the id of the new div
+		$('#' + tool.id).attr('id', sourceId);
+		// move any singleton divs in the recently-loaded code
+		moveOnlyOnce($('#' + sourceId));
 		$(tabHTML).appendTo($(".ui-tabs-nav", $tabs));
 		$(panelHTML).appendTo("#tabs");
 		$tabs.tabs("refresh");
-		$(destination).addClass($(source).attr('class'));
-		$(source).children().each(function() {
+		$('#' + destinationId).addClass($('#' + sourceId).attr('class'));
+		$('#' + sourceId).children().each(function() {
 			var clone = $(this).clone();
-			$(clone).appendTo(destination);
+			$(clone).appendTo('#' + destinationId);
 		});
+		// remove the thing added by the click (having saved everything of value)
 		$(".temp").remove();
 		var $listItem = $('> ul > li:last', $tabs);
 		$listItem.attr('title', tool.title);
 		addCloseButton($listItem);
-		$(destination).data('tool', tool);
-		$tabs.tabs( "option", "active", -1 );
-		if (tool.onAdd) { tool.onAdd($(destination)); }
+		$('#' + destinationId).data('tool', tool);
+		// give time to fill the tab, then show it
+		if (tool.onAdd) { tool.onAdd($('#' + destinationId)); }
 		return;
 
 		function addCloseButton($listItem) {
@@ -131,83 +137,39 @@ GemStone = function() {	//	hide everything inside an anonymous function to isola
 				var list = $listItem.parent().children('li')
 				,	index = list.index($listItem)
 				;
-				$(destination).remove();
-				$(destination + "t").remove();
+				$('#' + destinationId).remove();
+				$('#' + destinationId + "t").remove();
 				$tabs.tabs( "option", "active", 0);
 				$tabs.tabs("refresh");
 				event.preventDefault();
 			}
 		};
 
-		// a panel (such as CodeBrowser) could appear multiple times
-		// but there are some parts of it that we want to exist only once (e.g. css)
+		// There are some parts of a tab that we want to exist only once (e.g. css)
+		// $tabPanel is the newly-loaded div that might have a singleton in it
 		function moveOnlyOnce($tabPanel) {
-			var	$div = $('.once', $tabPanel)
-			,	newClass = $div.attr('id')
-			;
+			var	$div = $('.once', $tabPanel),	// find the singleton div (if any)
+				newClass = $div.attr('id');		// use its id for its class
 			$div.addClass(newClass);
+			// if the singleton exists only once (i.e., is new), then save it
 			if (1 === $('.' + newClass).length) {
-				$div.attr('id', null);
-				$('style', $div).appendTo('head');
+				$div.attr('id', null);			// clear the id (we will use the class)
+				// move the style element to the head
+				$('style', 'head').append($('style', $div).html());
 				$('style', $div).remove();
-				if ($div.html().replace(/(^\s+)(\s+$)/, "").length) {
-					$('body').append($div);
-				}
-			} else {
-				$div.remove();
+				$('body').append($div);
 			}
 		}
-	}
-	
-	function browseMethods(data) {
-		ajax(
-			'GET'
-		,	'MethodList.html' 
-		,	null
-		,	function(html) {
-				var string = html.replace('SEARCH_OBJECT', JSON.stringify(data));
-				$('body').append(string);
-			} 
-		);
-	}
-	
-	function browseImplementorsOf(anObject) {
-		var name = anObject ? anObject : prompt('Browse implementors of?');
-		if (!name) { return; }
-		browseMethods({
-			type: 'implementors'
-		,	find: name
-		,	label: 'Implementors of ' + name
-		});
-	}
-	
-	function browseReferencesTo(dict, klass) {
-		browseMethods({
-			type: 'referencesToGlobal'
-		,	dict: dict
-		,	find: klass
-		,	label: 'References to ' + klass
-		});
-	}
-
-	function browseSendersOf(anObject) {
-		var name = anObject ? anObject : prompt('Browse senders of?');
-		if (!name) { return; }
-		browseMethods({
-			type: 'senders'
-		,	find: name
-		,	label: 'Senders of ' + name
-		});
 	}
 	
 	function ajax(type, url, args, callback) { 
 		var startTime = new Date().getTime();
 		$statusBar.text('Sent request #' + (++requestCount) + ' for ' + url);
 		$.ajax({
-			type: type
-		,	url: url
-		,	data: args
-		,	success: success
+			type: type,
+			url: url,
+			data: args,
+			success: success
 		});
 /*
 		console.log([type, url, args]);
@@ -239,14 +201,55 @@ GemStone = function() {	//	hide everything inside an anonymous function to isola
 				if (callback) { (callback)(json); }
 			};
 			var elapsed = new Date().getTime() - startTime;
-			$statusBar.text(
-				'Request for ' + url + ' (roundtrip #' + requestCount + ') took ' +
+			var string = 'Request for ' + url + ' (roundtrip #' + requestCount + ') took ' +
 				serverTime + ' ms on server, ' + networkTime + ' ms on the network, and ' 
 				+ elapsed + ' ms on the client.'
-			);
+			console.log(string);
+			$statusBar.text(string);
 		};
 	}
 
+	function browseMethods(data) {
+		ajax(
+			'GET',
+			'MethodList.html', 
+			null,
+			function(html) {
+				var string = html.replace('SEARCH_OBJECT', JSON.stringify(data));
+				$('body').append(string);
+			} 
+		);
+	}
+	
+	function browseImplementorsOf(anObject) {
+		var name = anObject ? anObject : prompt('Browse implementors of?');
+		if (!name) { return; }
+		browseMethods({
+			type: 'implementors',
+			find: name,
+			label: 'Implementors of ' + name
+		});
+	}
+	
+	function browseReferencesTo(dict, klass) {
+		browseMethods({
+			type: 'referencesToGlobal',
+			dict: dict,
+			find: klass,
+			label: 'References to ' + klass
+		});
+	}
+
+	function browseSendersOf(anObject) {
+		var name = anObject ? anObject : prompt('Browse senders of?');
+		if (!name) { return; }
+		browseMethods({
+			type: 'senders',
+			find: name,
+			label: 'Senders of ' + name
+		});
+	}
+	
 	function getNextId() {
 		nextId = nextId + 1;
 		return 'id' + nextId;
@@ -259,8 +262,8 @@ GemStone = function() {	//	hide everything inside an anonymous function to isola
 	
 	function menu(options) {
 		options.selector.jjmenu(
-			'rightClick'
-		,	[ { 
+			'rightClick',
+			[ { 
 				getByFunction: function() {
 					var items = options.menu(triggerElement);
 					$.each(items, function(index, each) {
@@ -271,9 +274,9 @@ GemStone = function() {	//	hide everything inside an anonymous function to isola
 					});
 					return items;
 				}
-			} ]
-		,	null	//	userData
-		,	{ xposition: 'mouse', yposition: 'mouse' }
+			} ],
+			null,	//	userData
+			{ xposition: 'mouse', yposition: 'mouse' }
 		);
 	}
 
@@ -286,10 +289,9 @@ GemStone = function() {	//	hide everything inside an anonymous function to isola
 	//	runJs(sourcePath, successFunction)
 	//	runJs(sourcePath, arguments, successFunction)
 	function runJs(src, arg1, arg2) {
-		var args
-		,	done
-		,	result
-		;
+		var args,
+			done,
+			result;
 		if (typeof arg1 === 'function') {
 			done = arg1;
 		} else {
@@ -331,9 +333,9 @@ GemStone = function() {	//	hide everything inside an anonymous function to isola
 				'<div class="tableHeader"><table>' + table + '</table></div>' +
 				'<div class="tableBody"><table>' + table + '</table></div>'
 				);
-			$('.tableHeader tbody', $div).remove();
+//			$('.tableHeader tbody', $div).remove();
 			$('.tableBody caption', $div).remove();
-			$div.addClass('scrollingTable');		// excitement happens on resize()
+			$div.addClass('scrollingTable');
 		}
 	}
 	
@@ -345,58 +347,20 @@ GemStone = function() {	//	hide everything inside an anonymous function to isola
 		return $('</div/>').html(string).text();
 	}
 	
-	function resize() {
-		var $tables = $('.ui-tabs-panel .scrollingTable')
-						.not('.ui-tabs-hide .scrollingTable');
+	function resizeWindow() {
+		var $tables = $('.ui-tabs-panel[aria-hidden=false] .scrollingTable');
 		$.each($tables, function() { 
-			setColumnWidths($('.tableHeader table', this), $('.tableBody table', this));
+			resizeTable(this);
 		});
-		return;
-
-		function setColumnWidths($header, $body) {
-			var emptyBody   = 0 === $('tbody tr', $body).length
-			,	columnCount = $('thead tr th', $body).length - 1
-			;
-			$('thead', $body).removeClass('hide');
-			clearWidths($header);
-			clearWidths($body);
-			if (emptyBody) {	// ensure that there is at least one row in the body
-				$('tbody', $body).append('<tr />');
-				for (var i = 0; i < columnCount; ++i) {
-					$('tbody tr', $body).append('<td>&nbsp</td>');
-				}
-			}
-			var widths = $.map($('tbody tr:first td', $body), calculateWidth);
-			widths[0] = widths[0] - 1;
-			setWidths($body);
-			widths[0] = widths[0] + 1;
-			widths.push(12);
-			setWidths($header);
-			if (emptyBody) {
-				$('tbody', $body).empty();
-			}
-			$('thead', $body).addClass('hide');
-			$body.parent().css('top', $header.outerHeight() - 3 + 'px');
-			return;
-			
-			function clearWidths($element) {
-				$('thead tr:first th', $element).each(function() {
-					$(this).removeAttr('style');
-				});
-				$element.removeAttr('style');
-			}
-			function setWidths($element) {
-				var total = 0;
-				$('thead tr:first th', $element).each(function(index) {
-					$(this).css({ width: widths[index] + 'px' });
-					total = total + widths[index];
-				});
-				$element.css({'table-layout': 'fixed', 'width': total});
-			}
-			function calculateWidth(td) {	
-				return $(td).width();
-			}
-		}	
 	}
 	
+	function resizeTable($table) {
+		var	$header       = $('.tableHeader', $table),
+			$body         = $('.tableBody', $table),
+			captionHeight = $('thead', $header).outerHeight(),
+			headerHeight  = $('thead', $header).outerHeight() + 5;
+		$header.css('height', headerHeight + captionHeight + 'px');
+		$body.css('top', captionHeight + 2 + 'px');
+		$('tbody', $header).html($('tbody', $body).html());
+	}
 }();

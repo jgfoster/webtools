@@ -34,6 +34,7 @@ GemStone.saveScript('scripts/CodeBrowser.js', function() {
 		$('.divList').keydown(keydown);
 		doLayout(); 
 		update();
+		GemStone.activateLastTab();
 	}
 	
 	// keypress does not capture arrow keys (and other browser overrides) so we use keydown event

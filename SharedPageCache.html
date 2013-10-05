@@ -38,6 +38,7 @@
 		$('.frameState .clean', 		$tabPanel).text(data.clean);
 		$('.frameState .free', 			$tabPanel).css('width', Math.max(data.free - 5, min) + '%');
 		$('.frameState .free', 			$tabPanel).text(data.free);
+		GemStone.activateLastTab();
 	}
 }())
 //]]> 

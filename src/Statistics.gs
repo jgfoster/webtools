@@ -36,7 +36,7 @@ set compile_env: 0
 classmethod: Statistics
 sortOrder
 
-	^4.
+	^nil.
 %
 ! ------------------- Instance methods for Statistics
 category: 'Public'

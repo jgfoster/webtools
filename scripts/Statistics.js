@@ -68,7 +68,7 @@ GemStone.saveScript('scripts/Statistics.js', function() {
 		,	menu: statmonMenu
 		});
 		$('.statmonFiles tbody tr', $tabPanel).click(showFile);
-		$(window).resize();		//	force resize to update column widths
+		GemStone.activateLastTab();
 		return;
 		
 		function statmonMenu(element) { 

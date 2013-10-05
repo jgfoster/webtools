@@ -36,7 +36,7 @@ set compile_env: 0
 classmethod: ObjectLog
 sortOrder
 
-	^6.
+	^nil.	"disable for now"
 %
 ! ------------------- Instance methods for ObjectLog
 category: 'Public'

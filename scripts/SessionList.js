@@ -19,15 +19,15 @@ GemStone.saveScript('scripts/SessionList.js', function() {
 	}
 	
 	function gotData(json) {
-		var names = $.map(json.labels, function(each) { return each.key; })
-		,	slotIndex = names.indexOf('Slot')
-		,	hostIndex = names.indexOf('Host ID')
-		;
+		var names = $.map(json.labels, function(each) { return each.key; }),
+			slotIndex = names.indexOf('Slot'),
+			hostIndex = names.indexOf('Host ID');
 		buildHeader();
 		buildData();
-		$(window).resize();		//	force resize to update column widths
 		buildStoneList();
 		$('.slot', $tabPanel).click(showStats);
+		GemStone.activateLastTab();
+		return;
 
 		function buildHeader() {
 			var items = [];
@@ -43,8 +43,8 @@ GemStone.saveScript('scripts/SessionList.js', function() {
 		function buildData() {
 			var items = [];
 			$.each(json.sessions, function(index, sessionInfo) {
-				var slot = sessionInfo[slotIndex]
-				,	classes = 'slot clickable';
+				var slot = sessionInfo[slotIndex],
+					classes = 'slot clickable';
 				items.push('<tr');
 				if (slot) {
 					items.push(' title="Click to see cache statistics for slot ');
@@ -105,9 +105,10 @@ GemStone.saveScript('scripts/SessionList.js', function() {
 		function showStats() {
 			var slot = $(this).attr('class').match(/slot(\d+)/)[1]
 			;
-			$('#tabs').append('<div id="newTab" class="statsPanel maximize">' 
+			$('body').append('<div class="temp hidden">' 
+				+ '<div id="newTab" class="statsPanel maximize">' 
 				+ $('.statsTemplate').html() 
-				+ '</div>');
+				+ '</div></div>');
 			GemStone.addTab({
 				id:		'newTab'
 			,	label:	'Slot ' + slot + ' Stats'
@@ -144,7 +145,7 @@ GemStone.saveScript('scripts/SessionList.js', function() {
 				$('.tableBody tbody a.descr', $tabPanel).click(function(event){
 					getDescription(event, $(this))
 				});
-				$(window).resize();		//	force resize to update column widths
+				GemStone.activateLastTab();
 				return;
 
 				function getDescription(event, element) {

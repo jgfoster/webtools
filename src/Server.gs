@@ -272,7 +272,7 @@ method: Server
 handleRequestFor: aString
 
 	| gsFile |
-	(gsFile := GsFile openReadOnServer: '$GEMSTONE/examples/www' , aString) notNil ifTrue: [
+	(gsFile := GsFile openReadOnServer: '$WEBTOOLS' , aString) notNil ifTrue: [
 		| type |
 		type := (aString subStrings: $.) last.
 		stream nextPutAll: gsFile contents.

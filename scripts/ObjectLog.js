@@ -37,7 +37,7 @@ GemStone.saveScript('scripts/ObjectLog.js', function() {
 			.append(items.join(''));
 		$('.objectLog .tableBody', $tabPanel).scrollTop(0);
 		$('.objectLog .tableBody tbody tr', $tabPanel).click(clickedOnEntry);
-		$(window).resize();		//	force resize to update column widths
+		GemStone.activateLastTab();
 	}
 
 	function clickedOnEntry(event) {

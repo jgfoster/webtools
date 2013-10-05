@@ -17,12 +17,13 @@
 	function onAdd(tabPanel) {
 		$tabPanel = tabPanel;
 		GemStone.runJs(
-			'scripts/editor.js'
-		,	{ 
+			'scripts/editor.js',
+			{ 
 				editArea: $('.editArea', $tabPanel)
-			}
-		,	function(object) { editor = object; }
+			},
+			function(object) { editor = object; }
 		);
+		GemStone.activateLastTab();
 	}
 	
 }())

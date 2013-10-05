@@ -42,7 +42,7 @@ thead * { text-align: center; }
 th { font-weight: bold; }
 
 #tabs { position: fixed; top: 0; left: 0; bottom: 2em; right: 0; }
-#tabs .ui-tabs-panel { border-width: 0 1px 1px 1px; top: 30px; left: 3px; bottom: 3px; right: 3px; }
+#tabs .ui-tabs-panel { border-width: 0 1px 1px 1px; top: 31px; left: 3px; bottom: 3px; right: 3px; }
 
 #statusBar { border-bottom: 1px solid #DDD; padding: 3px 4px; position: fixed; bottom: 1.4em; height: 1em; width: 100% }
 
@@ -50,10 +50,9 @@ th { font-weight: bold; }
 #homePanel table { margin-left: auto; margin-right: auto; }
 
 .tableHeader { 
-	background: #FFF; position: absolute; 
-	top: 0; left: 0; bottom: auto; right: 0;
-	margin: 0 4px; z-index: 2; }
-.tableHeader table { width: auto; }
+	position: absolute; top: 0; left: 0; bottom: auto; right: 0;
+	margin: 0 4px; background-color: white; overflow-y: hidden; z-index: 1; }
+.tableHeader table { width: 100%; }
 .tableHeader table thead { border-left: 1px solid black; }
 .tableHeader table thead tr > th:first-child { border-left: 0; }
 .tableBody { 
