@@ -54,7 +54,7 @@ startServerAtPort: anInteger
 "
 	| delay |
 	delay := Delay forSeconds: 5.
-	GsFile stdout nextPutAll: (self new startServerAtPort: anInteger); cr; flush.
+	GsFile stdout nextPutAll: (self new startServerAtPort: anInteger); lf; flush.
 	[System commitTransaction] whileTrue: [delay wait].
 %
 ! ------------------- Instance methods for Server
@@ -101,7 +101,9 @@ doAnswer
 	stream := (WriteStream on: String new)
 		nextPutAll: 'HTTP/1.1 ';
 		nextPutAll: resultCode printString; space;
-		nextPutAll: self reasonPhrase; cr; lf;
+		nextPutAll: self reasonPhrase; 
+		nextPut: Character cr;
+		nextPut: Character lf;
 		yourself.
 	httpHeaders
 		at: 'Content-Length'			
@@ -111,10 +113,13 @@ doAnswer
 			nextPutAll: each;
 			nextPutAll: ': ';
 			nextPutAll: (httpHeaders at: each);
-			cr; lf.
+			nextPut: Character cr;
+			nextPut: Character lf;
+			yourself.
 	].
 	stream
-		cr; lf;
+		nextPut: Character cr;
+		nextPut: Character lf;
 		nextPutAll: string;
 		yourself.
 	socket writeWillNotBlock ifFalse: [self error: 'socket write will block'].
@@ -429,7 +434,7 @@ method: Server
 startForegroundServerAtPort: anInteger
 
 	self setupServerSocketAtPort: anInteger.
-	GsFile stdout nextPutAll: self serverURL; cr.
+	GsFile stdout nextPutAll: self serverURL; lf.
 	[
 		[true] whileTrue: [(Delay forSeconds: 5) wait].
 	] forkAt: Processor userBackgroundPriority.

@@ -1,9 +1,9 @@
 /* Copyright (c) 2011-2013 GemTalk Systems LLC. All Rights Reserved. */
 
-.browserPanel div { overflow: hidden; }
-.browserPanel div.divList { overflow: auto; }
+.browserPanel .navigation div { overflow: hidden; }
+.browserPanel .navigation div.divList { overflow: auto; }
 .browserPanel .ui-tabs .ui-tabs-panel { padding: 4px; }
-#tabs .browserPanel .ui-tabs-panel.divList { top: 28px; left: 2px; right: 2px; }
+#tabs .browserPanel .navigation .ui-tabs-panel.divList { top: 28px; left: 2px; right: 2px; }
 .browserPanel .navigation { position: absolute; top: 0; left: 0; right: 0; bottom: 50%; }
 .browserPanel .navigation > * { border-top: 0px; }
 .browserPanel .editArea { position: absolute; top: 50%; left: 0; right: 0; bottom: 0;   margin: 2px; }
@@ -21,5 +21,3 @@
 .browserPanel .superList  { position: absolute; top: 0;    left: 80%; right: 0;   bottom: auto; }
 .browserPanel .methodList { position: absolute; top: 20px; left: 80%; right: 0;   bottom: 20px; padding: 0 4px; }
 .browserPanel .implList   { position: absolute; top: auto; left: 80%; right: 0;   bottom: 0; 	  }
-
-#tabs .browserPanel .CodeMirror-scroll { height: auto; }

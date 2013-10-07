@@ -36,7 +36,7 @@ set compile_env: 0
 classmethod: Workspace
 sortOrder
 
-	^5.
+	^nil.
 %
 ! ------------------- Instance methods for Workspace
 category: 'other'

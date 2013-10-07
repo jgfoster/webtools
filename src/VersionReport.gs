@@ -36,7 +36,7 @@ set compile_env: 0
 classmethod: VersionReport
 sortOrder
 
-	^1.
+	^4.
 %
 ! ------------------- Instance methods for VersionReport
 category: 'other'

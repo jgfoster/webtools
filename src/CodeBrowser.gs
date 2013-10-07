@@ -38,7 +38,7 @@ set compile_env: 0
 classmethod: CodeBrowser
 sortOrder
 
-	^3.
+	^1.
 %
 ! ------------------- Instance methods for CodeBrowser
 category: 'Public'

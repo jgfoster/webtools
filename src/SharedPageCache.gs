@@ -36,7 +36,7 @@ set compile_env: 0
 classmethod: SharedPageCache
 sortOrder
 
-	^7.
+	^3.
 %
 ! ------------------- Instance methods for SharedPageCache
 category: 'other'

@@ -1,30 +1,31 @@
 // Copyright (c) 2011-2013 GemTalk Systems LLC. All Rights Reserved.
 
 GemStone.saveScript('scripts/CodeBrowser.js', function() {
-	var	$tabPanel
-	,	editor
-	,	classCategories = ['']
-	,	isDictsTab		= true
-	,	dictionary
-	,	mcPackage
-	,	classCategory
-	,	klass
-	,	isMetaClass 	= false
-	,	superClass
-	,	methodFilterBy	= 'category'
-	,	methodFilter
-	,	selector
-	,	implementor
-	,	isCtrlKeyDown	= false
-	;
+	var	$tabPanel,
+		editor,
+		classCategories 	= [''],
+		isDictsTab			= true,
+		dictionary,
+		mcPackage,
+		classCategory,
+		klass,
+		isMetaClass 		= false,
+		superClass,
+		methodFilterBy		= 'category',
+		methodFilter,
+		selector,
+		implementor,
+		isCtrlKeyDown		= false,
+		ignoreUpdateRequest	= false;
+
 	GemStone.loadCSS('css/CodeBrowser.css');
 	GemStone.runJsOnce('scripts/jquery.jstree.js', function() {
 		$.jstree._themes = 'css/jsTree/';
 		GemStone.addTab({
-			id:		'newTab'
-		,	label:	'Code Browser'
-		,	title:	'Browse Smalltalk classes'
-		,	onAdd:	onAdd
+			id:		'newTab',
+			label:	'Code Browser',
+			title:	'Browse Smalltalk classes',
+			onAdd:	onAdd
 		}); 
 	});
 	return;
@@ -56,7 +57,7 @@ GemStone.saveScript('scripts/CodeBrowser.js', function() {
 		}
 		return;
 	}
-	
+
 	function doLayout() {
 		createDictionaryPackageTabs();
 		createClassesTabs();
@@ -66,21 +67,22 @@ GemStone.saveScript('scripts/CodeBrowser.js', function() {
 		setupEditor();
 		return;
 
-		function prepareTabs($div, onSelect) {
+		function prepareTabs($div, activateFunction) {
 			var $divList = $('div', $div);
 			$.each($('ul li', $div), function(index) {
 				var id = GemStone.nextId();
 				$('a', this).attr('href', '#' + id);
 				$($divList[index]).attr('id', id);
 			});
-			$div.tabs({ select: onSelect });
+			$div.tabs({ activate: activateFunction });
 		}
-		
+	
 		function createDictionaryPackageTabs() {
 			prepareTabs(
 				$('.dictPckgTabs', $tabPanel), 
 				function(event, ui) {
-					if (setIsDictsTab(0 === ui.index)) { update(); }
+					var flag = 'Dicts' == ui.newTab.text();
+					if (setIsDictsTab(flag)) { update(); }
 				}
 			);
 		}
@@ -88,7 +90,10 @@ GemStone.saveScript('scripts/CodeBrowser.js', function() {
 		function createClassesTabs() {
 			prepareTabs(
 				$('.classesTab', $tabPanel), 
-				function(event, ui) {  }
+				function(event, ui) { 
+					var flag = 'Classes' == ui.newTab.text();
+					
+				}
 			);
 		}
 
@@ -96,7 +101,7 @@ GemStone.saveScript('scripts/CodeBrowser.js', function() {
 			prepareTabs(
 				$('.catsVariablesTabs', $tabPanel), 
 				function(event, ui) {
-					var filterBy = ['category', 'variable'][ui.index];
+					var filterBy = 'Categories' == ui.newTab.text() ? 'category' :  'variable';
 					if (setMethodFilterBy(filterBy)) { update(); }
 				}
 			);
@@ -106,7 +111,8 @@ GemStone.saveScript('scripts/CodeBrowser.js', function() {
 			prepareTabs(
 				$('.instanceClassTabs', $tabPanel), 
 				function(event, ui) {
-					if (setIsMetaClass(1 === ui.index)) { update(); }
+					var flag = 'Class' == ui.newTab.text();
+					if (setIsMetaClass(flag)) { update(); }
 				}
 			);
 		}
@@ -129,21 +135,23 @@ GemStone.saveScript('scripts/CodeBrowser.js', function() {
 			,	function(object) { editor = object; }
 			);
 		}
+
 	}
 
 	function update() {
+		if (ignoreUpdateRequest) { return; }
 		var myRequest = {
-				isDictsTab	: isDictsTab
-			,	dict		: dictionary
-			,	mcPackage	: mcPackage
-			,	classCat	: classCategory
-			,	klass		: klass
-			,	isMeta		: isMetaClass
-			,	superClass	: superClass
-			,	methodFilterBy	: methodFilterBy
-			,	methodFilter	: methodFilter
-			,	selector	: selector
-			,	implementor	: implementor
+				isDictsTab		: isDictsTab,
+				dict			: dictionary,
+				mcPackage		: mcPackage,
+				classCat		: classCategory,
+				klass			: klass,
+				isMeta			: isMetaClass,
+				superClass		: superClass,
+				methodFilterBy	: methodFilterBy,
+				methodFilter	: methodFilter,
+				selector		: selector,
+				implementor		: implementor
 			};
 //		console.trace();
 //		console.log(myRequest);
@@ -193,18 +201,18 @@ GemStone.saveScript('scripts/CodeBrowser.js', function() {
 
 		function dictionaryListMenu(element) { 
 			return [
-				{	title: 'Menu 1'
-				,	action: function() { console.log(['menu1', element]); }
-				}
-			,	{	title: 'Menu 2'
-				,	action: function() { console.log(['menu2', element]); }
-				}
+//				{	title: 'Menu 1'
+//				,	action: function() { console.log(['menu1', element]); }
+//				},
+//				{	title: 'Menu 2'
+//				,	action: function() { console.log(['menu2', element]); }
+//				}
 			]; 
 		}
 		
 		function fillPackageList() {
-			var items = []
-			,	foundSelection = false;
+			var items = [],
+				foundSelection = false;
 			$.each(data.packageList, function(index, value){
 				items.push('<div title="' + value + '"');
 				items.push(' class="clickable');
@@ -220,17 +228,16 @@ GemStone.saveScript('scripts/CodeBrowser.js', function() {
 		}
 		
 		function fillClassCatTree() {
-			if (!dictionary) { return }
 			var openNodes = $('.classCats', $tabPanel)
 					.find('li')
 					.map(function(index, element) { return element.id; })
 					.filter(function() { 
 						return $('.classCats', $tabPanel).jstree('is_open', '#' + this); 
-					})
-			,	root = { 
-					data: 'Categories'
-				,	attr: { id: idOfClassCat(null), title: '' }
-				,	children: [ ] 
+					}),
+				root = { 
+					data: 'Categories',
+					attr: { id: idOfClassCat(null), title: '' },
+					children: [ ] 
 				}
 			;
 			$.each(data.classCatList, function(i, each) { 
@@ -240,10 +247,10 @@ GemStone.saveScript('scripts/CodeBrowser.js', function() {
 			if ( root.children.length ) { root.state = 'open'; }
 			$('.classCats', $tabPanel)
 				.jstree({
-					plugins: [ 'themes', 'json_data', 'ui' ]
-				,	themes: { icons: false }
-				,	json_data: { data: [ root ] }
-				,	ui: { 
+					plugins: [ 'themes', 'json_data', 'ui' ],
+					themes: { icons: false },
+					json_data: { data: [ root ] },
+					ui: { 
 						select_limit: 1
 					,	initially_select: [ idOfClassCat(classCategory) ] 
 					}
@@ -255,28 +262,27 @@ GemStone.saveScript('scripts/CodeBrowser.js', function() {
 			return;
 
 			function addCategoryToNode(category, node, parentPath) {
-				var index = category.indexOf('-')
-				,	first = category.substring(0, 0 <= index ? index : category.length)
-				,	rest = 0 <= index ? category.substring(index + 1) : null
-				,	children = node.children
-				,	myPath = (parentPath ? parentPath + '-' : '') + first
-				,	child
-				;
+				var index = category.indexOf('-'),
+					first = category.substring(0, 0 <= index ? index : category.length),
+					rest = 0 <= index ? category.substring(index + 1) : null,
+					children = node.children,
+					myPath = (parentPath ? parentPath + '-' : '') + first,
+					child;
+				
 				$.each(children, function(index, each) {
 					if (first === each.data) { child = each; }
 				});
 				if ( !child ) {
-					var id = idOfClassCat(myPath)
-					,	isOpen = false
-					;
+					var id = idOfClassCat(myPath),
+						isOpen = false;
 					$.each(openNodes, function(index, value) { 
 						if (value === id) { isOpen = true; }
 					});
 					child = { 
-						data: first 
-					,	attr: { id: id, title: myPath }
-					,	state: (isOpen ? 'open' : null)
-					,	children: [ ]
+						data: first,
+						attr: { id: id, title: myPath },
+						state: (isOpen ? 'open' : null),
+						children: [ ]
 					};
 					children.push(child);
 				}
@@ -287,9 +293,9 @@ GemStone.saveScript('scripts/CodeBrowser.js', function() {
 		}
 
 		function fillClassList() {
-			var items = []
-			,	foundSelection = false
-			;
+			var items = [],
+				foundSelection = false;
+			
 			$.each(data.classList, function(index, value){
 				items.push('<div title="' + value + '"');
 				items.push(' class="clickable');
@@ -315,35 +321,35 @@ GemStone.saveScript('scripts/CodeBrowser.js', function() {
 		function classListMenu(element) { 
 			var klass = $(element).text();
 			return [
-				{	title: 'Browse References'
-				,	action: function() { 
+				{	title: 'Browse References',
+					action: function() { 
 						GemStone.browseReferencesTo(dictionary, klass); 
 					}
-				}
-			,	{	title: 'File Out Class'
-				,	action: function() { 
+				},
+				{	title: 'File Out Class',
+					action: function() { 
 						alert('Coming soon!');
 					}
-				}
-			,	{	title: 'Subclass Creation Template'
-				,	action: function() { 
+				},
+				{	title: 'Subclass Creation Template',
+					action: function() { 
 						alert('Coming soon!');
 					}
-				}
-			,	{	title: 'Add Missing Accessors'
-				,	action: function() { 
+				},
+				{	title: 'Add Missing Accessors',
+					action: function() { 
 						alert('Coming soon!');
 					}
-				}
-			,	{	title: 'Remove'
-				,	action: function() { 
+				},
+				{	title: 'Remove',
+					action: function() { 
 						if (confirm('Do you want to remove ' + klass + ' from ' + dictionary + '?')) {
 							removeClass(dictionary, klass);
 						}
 					}
-				}
-			,	{	title: 'Remove Prior Versions'
-				,	action: function() { 
+				},
+				{	title: 'Remove Prior Versions',
+					action: function() { 
 						alert('Coming soon!');
 					}
 				}
@@ -441,8 +447,8 @@ GemStone.saveScript('scripts/CodeBrowser.js', function() {
 		function methodListMenu(element) {
 			var name = $(element).text();
 			return [
-				{	title: 'Remove Method'
-				,	action: function() { 
+				{	title: 'Remove Method',
+					action: function() { 
 						if (confirm('Do you want to remove #\'' + name + 
 								'\' from ' + klass + 
 								(isMetaClass ? ' class' : '') + 
@@ -450,24 +456,24 @@ GemStone.saveScript('scripts/CodeBrowser.js', function() {
 							removeMethod(dictionary, klass, isMetaClass, name);
 						}
 					}
-				}
-			,	{	title: 'Browse Implementors'
-				,	action: function() { 
+				},
+				{	title: 'Browse Implementors',
+					action: function() { 
 						GemStone.browseImplementorsOf(name); 
 					}
-				}
-			,	{	title: 'Browse Implementors of ...'
-				,	action: function() { 
+				},
+				{	title: 'Browse Implementors of ...',
+					action: function() { 
 						GemStone.browseImplementorsOf(); 
 					}
-				}
-			,	{	title: 'Browse Senders'
-				,	action: function() { 
+				},
+				{	title: 'Browse Senders',
+					action: function() { 
 						GemStone.browseSendersOf(name);
 					}
-				}
-			,	{	title: 'Browse Senders of ...'
-				,	action: function() { 
+				},
+				{	title: 'Browse Senders of ...',
+					action: function() { 
 						GemStone.browseSendersOf();
 					}
 				}
@@ -593,9 +599,11 @@ GemStone.saveScript('scripts/CodeBrowser.js', function() {
 		if (klass === value) { return false; }
 		if (!isOkayToChange()) { return false; }
 		klass = value;
+		ignoreUpdateRequest = true;
+		$('.instanceClassTabs', $tabPanel).tabs('option', 'active', 0);
+		$('.catsVariablesTabs', $tabPanel).tabs('option', 'active', 0);
 		setSuperClass(null);
-		setMethodFilter(null);
-		setSelector(null);
+		ignoreUpdateRequest = false;
 		return true;
 	}
 	
@@ -644,5 +652,5 @@ GemStone.saveScript('scripts/CodeBrowser.js', function() {
 		implementor = value;
 		return true;
 	}
-	
+
 });

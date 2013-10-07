@@ -1,19 +1,19 @@
 // Copyright (c) 2011-2013 GemTalk Systems LLC. All Rights Reserved.
 
 GemStone.saveScript('scripts/editor.js', function(options) {
-	var	editor			
-	,	isMethod		= false
-	,	dictionaryName
-	,	className
-	,	isMeta			= false
-	,	category		
-	,	source			= ''
-	,	errorInfo		= {}
-	,	stepPoints
-	,	unmarkFunctions = []
-	,	mousePosition	= { x: 0, y: 0 }
-	,	onSaveFunction
-	;
+	var	editor,	
+		isMethod		= false,
+		dictionaryName,
+		className,
+		isMeta			= false,
+		category,
+		source			= '',
+		errorInfo		= {},
+		stepPoints,
+		unmarkFunctions = [],
+		mousePosition	= { x: 0, y: 0 },
+		onSaveFunction;
+	
 	GemStone.loadCSS('css/codemirror.css');
 	GemStone.loadCSS('css/editor.css');
 	GemStone.runJsOnce('scripts/codemirror.js', function() {
@@ -21,23 +21,24 @@ GemStone.saveScript('scripts/editor.js', function(options) {
 			setupEditor(); 
 		});
 	});
+	
 	return {
-		isOkayToChange: isOkayToChange
-	,	isModified: 	isModified
-	,	setCode:		setCode
-	,	setMethod:		setMethod
+		isOkayToChange: isOkayToChange,
+		isModified: 	isModified,
+		setCode:		setCode,
+		setMethod:		setMethod
 	};
 
 	function setupEditor() {
 		var id = GemStone.nextId();
 		options.editArea.attr('id', id);
 		editor = CodeMirror(document.getElementById(id), {
-			mode: 'text/x-stsrc'
-		,	enterMode: 'keep'
-		,	lineNumbers: true
-		,	matchBrackets: true
-		,	onChange: onEditorChange
-		,	onHighlightComplete: onHighlightComplete
+			mode: 'text/x-stsrc',
+			enterMode: 'keep',
+			lineNumbers: true,
+			matchBrackets: true,
+			onChange: onEditorChange,
+			onHighlightComplete: onHighlightComplete
 		});
 		options.editArea.focus(setFocusToEnd);
 		$(editor.getWrapperElement()).mousemove( function(e) { 
@@ -53,11 +54,11 @@ GemStone.saveScript('scripts/editor.js', function(options) {
 		if (!event.ctrlKey) { return; }
 //		console.log(event);
 		if (event.keyCode === 65) { // <Ctrl>+<A>
-			var lastLine = editor.lineCount() - 1
-			,	size = editor.getLine(lastLine).length
-			,	end = { line: lastLine, ch: size }
-			,	start = { line: 0, ch: 0 }
-			;
+			var lastLine = editor.lineCount() - 1,
+				size = editor.getLine(lastLine).length,
+				end = { line: lastLine, ch: size },
+				start = { line: 0, ch: 0 };
+			
 			editor.setSelection(start, end);
 			event.preventDefault();
 			return;
@@ -76,12 +77,12 @@ GemStone.saveScript('scripts/editor.js', function(options) {
 	}
 	
 	function evaluateText() {
-		var pos = editor.getCursor(true)
-		,	start = { line: pos.line, ch: pos.ch }
-		;
+		var pos = editor.getCursor(true),
+			start = { line: pos.line, ch: pos.ch };
+		
 		pos = editor.getCursor(false);
-		var	end = { line: pos.line, ch: pos.ch }
-		, 	myRequest;
+		var	end = { line: pos.line, ch: pos.ch },
+		 	myRequest;
 		if (!editor.somethingSelected()) {
 			start.ch = 0;
 			end.ch = editor.getLine(start.line).length;
@@ -106,10 +107,10 @@ GemStone.saveScript('scripts/editor.js', function(options) {
 			}
 			if (confirm(data.description + '\nDebug process?')) {
 				GemStone.ajax(
-					'GET'
-				,	'Debugger.html' 
-				,	null
-				,	function(html) {
+					'GET',
+					'Debugger.html',
+					null,
+					function(html) {
 						var string = html.replace('OOP', data.oop);
 						$('body').append(string);
 					} 
@@ -162,11 +163,11 @@ GemStone.saveScript('scripts/editor.js', function(options) {
  
 	function saveMethod() {
 		var myRequest = {
-			dict:		dictionaryName
-		,	klass:		className
-		,	isMeta:		isMeta
-		,	category:	category
-		,	source: 	editor.getValue()
+			dict:		dictionaryName,
+			klass:		className,
+			isMeta:		isMeta,
+			category:	category,
+			source: 	editor.getValue()
 		};
 		GemStone.ajax('POST','Workspace/saveMethod', myRequest, onSaveMethod);
 		return;
@@ -202,8 +203,9 @@ GemStone.saveScript('scripts/editor.js', function(options) {
 	}
 
 	function doUnmark() {
-		$.each(unmarkFunctions, function(i, aFunction) { aFunction(); });
+		var list = unmarkFunctions;
 		unmarkFunctions = [];
+		$.each(list, function(i, each) { each.clear(); });
 	}
 	
 	function isOkayToChange() {
@@ -255,15 +257,16 @@ GemStone.saveScript('scripts/editor.js', function(options) {
 	}
 	
 	function calculateStepPoints(data) {
+		console.log(['calculateStepPoints()', data]);
 		if (!data.stepPoints) { return; }
 		for (var i = 0; i < data.stepPoints.length; i = i + 1) {
-			var offset = data.stepPoints[i] - 1
-			,	from = positionOfOffset(offset + 2)
-			,	token = editor.getTokenAt(from)
-			,	to = { line: from.line, ch: token.end }
-			,	lineInfo
-			,	cssClass
-			;
+			var offset = data.stepPoints[i] - 1,
+				from = positionOfOffset(offset + 2),
+				token = editor.getTokenAt(from),
+				to = { line: from.line, ch: token.end },
+				lineInfo,
+				cssClass;
+			
 			cssClass = 'gsStepPoint';
 			if (i + 1 === data.nowAt) { cssClass = cssClass + ' gsCurrentStepPoint'; }
 			from.ch = from.ch - 1;
@@ -271,27 +274,27 @@ GemStone.saveScript('scripts/editor.js', function(options) {
 			stepPoints[stepPoints.length] = [offset, i + 1];
 		}
 		for (var i = 0; i < data.sends.length; i = i + 2) {
-			var offset = data.sends[i] - 1
-			,	selector = data.sends[i + 1]
-			,	stepPoint = stepPointDataFor(offset)
-			;
+			var offset = data.sends[i] - 1,
+				selector = data.sends[i + 1],
+				stepPoint = stepPointDataFor(offset);
+			
 			stepPoint[2] = selector;
 		}
 		GemStone.menu({
-			selector: $(editor.getWrapperElement())
-		,	menu: editorMenu
+			selector: $(editor.getWrapperElement()),
+			menu: editorMenu
 		});
 	}
 
 	function positionOfOffset(anInteger) {
-		var lines = editor.getValue().split('\n')
-		,	start = 0
-		,	end = 0
-		, 	position = { 
+		var lines = editor.getValue().split('\n'),
+			start = 0,
+			end = 0,
+		 	position = { 
 				line: lines.length - 1, 
 				ch: lines[lines.length - 1].length - 1 
-			}
-		;
+			};
+		
 		$.each(lines, function(i, line) {
 			start = end;
 			end = start + line.length + 1;
@@ -303,11 +306,11 @@ GemStone.saveScript('scripts/editor.js', function(options) {
 	}
 	
 	function offsetOfPosition(position) {
-		var offset = null
-		,	lines = editor.getValue().split('\n')
-		,	start = 0
-		,	end = 0
-		;
+		var offset = null,
+			lines = editor.getValue().split('\n'),
+			start = 0,
+			end = 0;
+		
 		$.each(lines, function(i, line) {
 			start = end;
 			end = start + line.length + 1;
@@ -329,38 +332,38 @@ GemStone.saveScript('scripts/editor.js', function(options) {
 	}
 
 	function editorMenu(element) {
-		var coordsChar = editor.coordsChar(mousePosition)
-		,	token = editor.getTokenAt(coordsChar)
-		,	offset = offsetOfPosition({line: coordsChar.line, ch: token.start})
-		,	stepPointData = stepPointDataFor(offset)
-		,	stepPoint = stepPointData ? stepPointData[1] : null
-		,	mySelector = stepPointData ? stepPointData[2] : null
-		,	items = []
-		;
+		var coordsChar = editor.coordsChar(mousePosition),
+			token = editor.getTokenAt(coordsChar),
+			offset = offsetOfPosition({line: coordsChar.line, ch: token.start}),
+			stepPointData = stepPointDataFor(offset),
+			stepPoint = stepPointData ? stepPointData[1] : null,
+			mySelector = stepPointData ? stepPointData[2] : null,
+			items = [];
+		
 		if (stepPoint) {
 			items[0] = {
-				title: 'Step Point ' + stepPoint
-			,	customClass: 'disabled'
-			,	action: function() {}
+				title: 'Step Point ' + stepPoint,
+				customClass: 'disabled',
+				action: function() {}
 			};
 			if (mySelector) {
 				items[1] = {
-					title: 'Implementors of ' + mySelector
-				,	action: function() { GemStone.browseImplementorsOf(mySelector); }
+					title: 'Implementors of ' + mySelector,
+					action: function() { GemStone.browseImplementorsOf(mySelector); }
 				};
 				items[2] = {
-					title: 'Senders of ' + mySelector
-				,	action: function() { GemStone.browseSendersOf(mySelector); }
+					title: 'Senders of ' + mySelector,
+					action: function() { GemStone.browseSendersOf(mySelector); }
 				};
 			}
 		}
 		items[items.length] = {
-			title: 'Implementors of ...'
-		,	action: function() { GemStone.browseImplementorsOf(); }
+			title: 'Implementors of ...',
+			action: function() { GemStone.browseImplementorsOf(); }
 		};
 		items[items.length] = {
-			title: 'Senders of ...'
-		,	action: function() { GemStone.browseSendersOf(); }
+			title: 'Senders of ...',
+			action: function() { GemStone.browseSendersOf(); }
 		};
 		return items; 
 	}
@@ -369,47 +372,47 @@ GemStone.saveScript('scripts/editor.js', function(options) {
 //		console.log('onHighlightComplete');
 	}
 	
-/*
-,	'Undo': {
+/*	,
+	'Undo': {
 		click: function(element) { console.log('Undo'); }
-	}
-,	'Redo': {
+	},
+	'Redo': {
 		click: function(element) { console.log('Redo'); }
-	}
-,	'------------': {
-		click: function(element) {  }
-	,	klass: 'separator'
-	}
-,	'Cut': {
+	},
+	'------------': {
+		click: function(element) {  },
+		klass: 'separator'
+	},
+	'Cut': {
 		click: function(element) { console.log('Cut'); }
-	}
-,	'Copy': {
+	},
+	'Copy': {
 		click: function(element) { console.log('Copy'); }
-	}
-,	'Paste': {
+	},
+	'Paste': {
 		click: function(element) { console.log('Paste'); }
-	}
-,	'Delete': {
+	},
+	'Delete': {
 		click: function(element) { console.log('Delete'); }
-	}
-,	'-----------': {
-		click: function(element) {  }
-	,	klass: 'separator'
-	}
-,	'Select All': {
+	},
+	'-----------': {
+		click: function(element) {  },
+		klass: 'separator'
+	},
+	'Select All': {
 		click: function(element) { console.log('Select All'); }
-	}
-,	'----------': {
-		click: function(element) {  }
-	,	klass: 'separator'
-	}
-,	'Senders': {
-		click: function(element) { browseSenders(selector); }
-	,	klass: 'gsSenders'
-	}
-,	'Implementors': {
-		click: function(element) { browseImplementors(selector); }
-	,	klass: 'gsImplementors'
+	},
+	'----------': {
+		click: function(element) {  },
+		klass: 'separator'
+	},
+	'Senders': {
+		click: function(element) { browseSenders(selector); },
+		klass: 'gsSenders'
+	},
+	'Implementors': {
+		click: function(element) { browseImplementors(selector); },
+		klass: 'gsImplementors'
 	}
 }
 */

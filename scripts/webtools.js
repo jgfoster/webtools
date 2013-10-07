@@ -204,7 +204,7 @@ GemStone = function() {	//	hide everything inside an anonymous function to isola
 			var string = 'Request for ' + url + ' (roundtrip #' + requestCount + ') took ' +
 				serverTime + ' ms on server, ' + networkTime + ' ms on the network, and ' 
 				+ elapsed + ' ms on the client.'
-			console.log(string);
+//			console.log(string);
 			$statusBar.text(string);
 		};
 	}
@@ -320,7 +320,9 @@ GemStone = function() {	//	hide everything inside an anonymous function to isola
 			if (done) { done(null); }
 		} else {
 			scripts[src] = true;
-			$.getScript(src, function() { done(null); });
+			$.getScript(src, function() { 
+				done(null); 
+			});
 		}
 	}
 	
