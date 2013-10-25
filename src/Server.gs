@@ -277,7 +277,7 @@ method: Server
 handleRequestFor: aString
 
 	| gsFile |
-	(gsFile := GsFile openReadOnServer: '$WEBTOOLS' , aString) notNil ifTrue: [
+	(gsFile := GsFile openReadOnServer: '$WEBTOOLS/htdocs' , aString) notNil ifTrue: [
 		| type |
 		type := (aString subStrings: $.) last.
 		stream nextPutAll: gsFile contents.
