@@ -1,6 +1,7 @@
-/.svn*
-*/.svn*
-/.DS_Store
-*/.DS_Store
+.svn*
+.DS_Store
+*.pem
+make_certs.log
+server.config
 start
 webtools.out

@@ -3,7 +3,7 @@
 doit
 Object subclass: 'Server'
   instVarNames: #( server socket resultCode
-                    httpHeaders stream startTime password)
+                    httpHeaders stream startTime)
   classVars: #()
   classInstVars: #()
   poolDictionaries: #()
@@ -31,18 +31,21 @@ run
 "
 	Server run.
 "
-	self startServerAtPort: 8080.
+	self startSecureServerAtPort: 8080.
 %
 category: 'other'
 set compile_env: 0
 classmethod: Server
-runInForeground
+startSecureServerAtPort: anInteger
 "
-	Server runInForeground.
+	If anInteger is nil then assign a random port.
+	GsSocket closeAll.
+	Server startSecureServerAtPort: 8080.
 "
-	self new 
-		password: nil; "'swordfish';"
-		startForegroundServerAtPort: 8080.
+	| delay |
+	delay := Delay forSeconds: 5.
+	GsFile stdout nextPutAll: (self new startSecureServerAtPort: anInteger); lf; flush.
+	[System commitTransaction] whileTrue: [delay wait].
 %
 category: 'other'
 set compile_env: 0
@@ -134,7 +137,7 @@ doAnswer
 	] fork.
 	numWritten == string size ifFalse: [
 		string := 'Tried to write ' , string size printString , ', but wrote ' , numWritten printString.
-		GsFile stdout nextPutAll: string.
+		GsFile stderr nextPutAll: string; lf.
 		self error: string.
 		^self.
 	].
@@ -164,10 +167,10 @@ encode: aString
 category: 'Request Handler'
 set compile_env: 0
 method: Server
-errorExpectedGetOrPost
+errorExpectedGetOrPost: aString
 
 	resultCode := 404.
-	self htmlWithBody: 'Expected a GET or POST request!'.
+	self htmlWithBody: 'Expected a GET or POST request but got ' , aString printString , '!'.
 %
 category: 'Request Handler'
 set compile_env: 0
@@ -183,10 +186,22 @@ method: Server
 handleRequest
 
 	"Called on a copy of the instance accepting connections"
-	| readStream type string line headers contentLength path args selector class pieces |
-	readStream := ReadStream on: (socket readString: 1000).
+	| string readStream type line headers contentLength path args selector class pieces |
+	string := String new.
+	[
+		string size < 20.
+	] whileTrue: [
+		[
+			string addAll: (socket readString: 1000).
+		] on: Error do: [:ex | 
+			GsFile stderr nextPutAll: ex description; lf.
+			socket close.
+			^self.
+		].
+	].
+	readStream := ReadStream on: string.
 	type := readStream upTo: Character space.
-	(type = 'GET' or: [type = 'POST']) ifFalse: [^self errorExpectedGetOrPost].
+	(type = 'GET' or: [type = 'POST']) ifFalse: [^self errorExpectedGetOrPost: type].
 	path := readStream upTo: Character space.
 	string := readStream upTo: Character cr.
 	readStream peekFor: Character lf.
@@ -212,23 +227,6 @@ handleRequest
 					(Delay forMilliseconds: 10) wait.
 				].
 			].
-		].
-	].
-	password notNil ifTrue: [
-		| line cookies cookie |
-		line := headers at: 'Cookie' ifAbsent: [''].
-		cookies := (line subStrings: $;)
-			inject: Dictionary new
-			into: [:dict :each | 
-				| index key value |
-				index := each indexOf: $=.
-				key := (each copyFrom: 1 to: index - 1) trimBlanks.
-				value := (each copyFrom: index + 1 to: each size) trimBlanks.
-				dict at: key put: value.
-				dict].
-		cookie := cookies at: 'password' ifAbsent: [nil].
-		cookie ~= password ifTrue: [
-			^self handleRequestFor: '/Password.html'.
 		].
 	].
 	type = 'GET' ifTrue: [
@@ -293,7 +291,6 @@ category: 'Request Handler'
 set compile_env: 0
 method: Server
 handleRequestOn: aSocket
-
 	"Called on a *copy* of the instance accepting connections
 	so we can keep local stuff in instance variables and handle
 	requests in parallel."
@@ -309,6 +306,86 @@ handleRequestOn: aSocket
 		handleRequest;
 		yourself.
 	System commitTransaction.
+%
+category: 'Request Handler'
+set compile_env: 0
+method: Server
+handleSecureRequestOn: aSocket
+
+	| certificatePath flag certError string |
+	aSocket disableCertificateVerification.
+	certificatePath := '$WEBTOOLS/server.pem'.
+	flag := aSocket 
+		useCertificateFile: certificatePath
+		withPrivateKeyFile: certificatePath
+		privateKeyPassphrase: nil.
+	flag ifFalse: [
+		GsSecureSocket fetchErrorStringArray do: [:each | 
+			GsFile stderr nextPutAll: each; lf.
+		].
+		self error: 'GsSecureSocket>>#''useCertificateFile:withPrivateKeyFile:privateKeyPassphrase:'' failed. See stderr for details'.
+	].
+	flag := aSocket setCipherListFromString: 'ALL:!ADH:@STRENGTH'.
+	flag ifFalse: [
+		self error: 'GsSecureSocket>>#''setCipherListFromString:'' failed'.
+	].
+	aSocket secureAccept ifTrue: [^self handleRequestOn: aSocket].
+	certError := GsSecureSocket fetchLastCertificateVerificationErrorForServer.
+	certError isNil ifTrue: [	"This seems to happen when we come in as HTTP rather than HTTPS"
+		| crlf string i j  |
+		crlf := Character cr asString , Character lf asString.
+		string := String new.
+		aSocket changeClassTo: GsSocket.
+		10 timesRepeat: [
+			(aSocket readWillNotBlockWithin: 10) ifTrue: [
+				string addAll: (aSocket readString: 1000).
+				i := string indexOfSubCollection: 'Host: ' startingAt: 1.
+				0 < i ifTrue: [
+					j := string indexOfSubCollection: crlf startingAt: i.
+					0 < j ifTrue: [
+						string := string copyFrom: i + 6 to: j - 1.
+						string := 'HTTP/1.1 303 See Other' , crlf , 
+									'Location: https://' , string , crlf , crlf.
+						aSocket  write: string; close.
+						^self
+					].
+				].
+			].
+		].
+		GsFile stdout nextPutAll: string; lf.
+		string := aSocket peerName , ' (' , aSocket peerAddress printString , ')'.
+		aSocket close.
+		GsFile stderr nextPutAll: 'Unspecified certificate verification error from ' , string; lf.
+		^self.
+	]. 
+	string := socket fetchLastIoErrorString.
+	string isNil ifFalse: [
+		self error: string.
+	].
+	GsSecureSocket fetchErrorStringArray do: [:each | 
+		GsFile stderr nextPutAll: each; lf.
+	].
+	self error: 'GsSecureSocket>>#''secureAccept'' failed. See stderr for details'.
+%
+category: 'Request Handler'
+set compile_env: 0
+method: Server
+handleSecureRequestOnA: aSocket
+
+	| certError string |
+	aSocket secureAccept ifTrue: [^self handleRequestOn: aSocket].
+	certError := GsSecureSocket fetchLastCertificateVerificationErrorForServer.
+	certError isNil ifTrue: [
+		self error: 'GsSecureSocket class>>#''fetchLastCertificateVerificationErrorForServer'' returned nil'.
+	]. 
+	string := socket fetchLastIoErrorString.
+	string isNil ifFalse: [
+		self error: string.
+	].
+	GsSecureSocket fetchErrorStringArray do: [:each | 
+		GsFile stderr nextPutAll: each; lf.
+	].
+	self error: 'GsSecureSocket>>#''secureAccept'' failed. See stderr for details'.
 %
 category: 'Request Handler'
 set compile_env: 0
@@ -358,13 +435,6 @@ initializeHeaders
 		at: 'Date' 						put: dateString;
 		at: 'Server'						put: 'GemStone/S 64 Bit Server';
 		yourself.
-%
-category: 'Accessors'
-set compile_env: 0
-method: Server
-password: aString
-
-	password := aString.
 %
 category: 'Request Handler'
 set compile_env: 0
@@ -418,6 +488,19 @@ serverURL
 category: 'Web Server'
 set compile_env: 0
 method: Server
+setupSecureServerSocketAtPort: anInteger
+
+	socket := GsSecureSocket newServer.
+	(socket makeServerAtPort: anInteger) isNil ifTrue: [
+		| string |
+		string := socket lastErrorString.
+		socket close.
+		self error: string.
+	].
+%
+category: 'Web Server'
+set compile_env: 0
+method: Server
 setupServerSocketAtPort: anInteger
 
 	socket := GsSocket new.
@@ -449,6 +532,36 @@ startForegroundServerAtPort: anInteger
 	] ensure: [
 		socket close.
 	].
+%
+category: 'Web Server'
+set compile_env: 0
+method: Server
+startSecureServerAtPort: anInteger
+
+	self setupSecureServerSocketAtPort: anInteger.
+	server := [
+		[
+			[
+				Processor yield.
+				true.
+			] whileTrue: [
+				(socket readWillNotBlockWithin: 1000) ifTrue: [
+					[:aServer :aSocket |
+						aSocket isNil ifTrue: [
+							self error: socket lastErrorString.
+						].
+						aServer handleSecureRequestOn: aSocket.
+					] forkAt: Processor userBackgroundPriority
+						with: (Array 
+							with: self copy
+							with: socket accept).
+				].
+			].
+		] ensure: [
+			socket close.
+		].
+	] forkAt: Processor userBackgroundPriority.
+	^self serverURL.
 %
 category: 'Web Server'
 set compile_env: 0
