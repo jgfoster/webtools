@@ -14,10 +14,15 @@ GemStone.saveScript('scripts/SessionList.js', function() {
 
 	function onAdd(tabPanel) {
 		$tabPanel = tabPanel;
+		$('button.refresh', $tabPanel).click(function() { refresh(); });
 		GemStone.scroll($('.gemList', $tabPanel));
+		refresh();
+	}
+
+	function refresh() {
 		GemStone.ajax('GET', 'SessionList', null, gotData);
 	}
-	
+
 	function gotData(json) {
 		var names = $.map(json.labels, function(each) { return each.key; }),
 			slotIndex = names.indexOf('Slot'),
@@ -39,7 +44,7 @@ GemStone.saveScript('scripts/SessionList.js', function() {
 			var html = items.join('');
 			$('thead tr', $tabPanel).empty().append(html);
 		}
-		
+
 		function buildData() {
 			var items = [];
 			$.each(json.sessions, function(index, sessionInfo) {
@@ -57,7 +62,7 @@ GemStone.saveScript('scripts/SessionList.js', function() {
 						var x = (field + '').match(/(\d+)(s)/);
 						items.push('<td>');
 						if (x) {
-							var 
+							var
 								sec = x[1]
 							,	min = Math.floor(sec / 60)
 							,	hrs = Math.floor(min / 60)
@@ -105,9 +110,9 @@ GemStone.saveScript('scripts/SessionList.js', function() {
 		function showStats() {
 			var slot = $(this).attr('class').match(/slot(\d+)/)[1]
 			;
-			$('body').append('<div class="temp hidden">' 
-				+ '<div id="newTab" class="statsPanel maximize">' 
-				+ $('.statsTemplate').html() 
+			$('body').append('<div class="temp hidden">'
+				+ '<div id="newTab" class="statsPanel maximize">'
+				+ $('.statsTemplate').html()
 				+ '</div></div>');
 			GemStone.addTab({
 				id:		'newTab'
@@ -117,7 +122,7 @@ GemStone.saveScript('scripts/SessionList.js', function() {
 			});
 			return;
 		}
-		
+
 		function getStats($tabPanel, slot) {
 			GemStone.scroll($('.stats', $tabPanel));
 			GemStone.ajax(
@@ -127,7 +132,7 @@ GemStone.saveScript('scripts/SessionList.js', function() {
 			,	function(data){ gotStats($tabPanel, slot, data); }
 			);
 			return;
-			
+
 			function gotStats($tabPanel, slot, data) {
 				var items = [];
 				$.each(data.stats, function() {
@@ -151,11 +156,11 @@ GemStone.saveScript('scripts/SessionList.js', function() {
 				function getDescription(event, element) {
 					var name = $(element).parent().text();
 					name = name.substring(0, name.length - 2);
-					GemStone.ajax('GET', 'SessionList/cacheDescription', 
+					GemStone.ajax('GET', 'SessionList/cacheDescription',
 						{'name' : name}, gotDescription);
 					event.preventDefault();
-					return; 
-					
+					return;
+
 					function gotDescription(data) {
 						alert(data.description);
 						$(element).parent().attr('title', data.description);

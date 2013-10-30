@@ -1,7 +1,8 @@
 .svn*
 .DS_Store
 *.pem
+.topazini
 make_certs.log
 server.config
-start
+start.a
 webtools.out

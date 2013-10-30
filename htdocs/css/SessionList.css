@@ -1,7 +1,7 @@
 /* Copyright (c) 2011-2013 GemTalk Systems LLC. All Rights Reserved. */
 
 .gemListPanel td { text-align: right; }
-.gemList { position: absolute; top: 0; left: 0; bottom: 24px; right: 0; }
+.gemList { position: absolute; top: 0; left: 0; bottom: 30px; right: 0; }
 .gemListFooter { top: auto; left: 4px; bottom: 4px; }
 .stoneProcesses { display: inline; margin: 4px; }
 .stoneProcesses li { display: inline; }
