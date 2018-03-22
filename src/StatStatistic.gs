@@ -55,17 +55,16 @@ classmethod: StatStatistic
 _stats
 
 	| gsFile stream line stats string i |
-	gsFile := GsFile openReadOnServer: '$GEMSTONE/bin/vsd'.
+	gsFile := GsFile openReadOnServer: '$GEMSTONE/bin/vsd.stats.tcl'.
 	[
 		[
 			line := gsFile nextLine.
-			line notNil and: [line ~= 'array set statDocs {
-'].
-		] whileTrue: [].
+			line isNil or: [line includesString: 'array set statDocs' ].
+		] whileFalse: [].
 		stream := WriteStream on: String new.
 		[
-			(line := gsFile nextLine) = 'array set vsdhelp {
-'.
+			line := gsFile nextLine.
+			line isNil
 		] whileFalse: [
 			stream nextPutAll: line.
 		].
@@ -86,13 +85,12 @@ _stats
 		string := string collect: [:each | each = $\ ifTrue: [Character lf] ifFalse: [each]].
 		array at: 1 put: string.
 	].
-	1 to: 47 do: [:i | 
-		stats at: 'SessionStat' 		, i printString put: (stats at: 'SessionStat0'	) copy.
-		stats at: 'VMStat' 			, i printString put: (stats at: 'VMStat0'		) copy.
-		stats at: 'GlobalStat' 		, i printString put: (stats at: 'GlobalStat0'		) copy.
+	1 to: 47 do: [:j| 
+		stats at: 'SessionStat' 		, j printString put: (stats at: 'SessionStat0'	) copy.
+		stats at: 'GlobalStat' 		, j printString put: (stats at: 'GlobalStat0'		) copy.
 	].
-	0 to: 10 do: [:i | 
-		stats at: 'sharedCounter' 	, i printString put: (stats at: 'sharedCounter'	) copy.
+	0 to: 10 do: [:j | 
+		stats at: 'sharedCounter' 	, j printString put: (stats at: 'sharedCounter'	) copy.
 	].
 	[
 		stream atEnd or: [(line := stream nextLine) = 'array set statDefinitions {'].
@@ -106,11 +104,11 @@ _stats
 			at: (stream upTo: $})
 			ifAbsentPut: [#('' nil nil nil nil) copy].
 		values := ReadStream on: (stream upTo: ${; upTo: $}).
-		2 to: 5 do: [:i | 
+		2 to: 5 do: [:j | 
 			string := values upTo: ((values peekFor: $")
 				ifTrue: [$"]
 				ifFalse: [$ ]).
-			array at: i put: string asSymbol.
+			array at: j put: string asSymbol.
 		].
 	].
 	stats do: [:each | 

@@ -56,7 +56,7 @@ $OPENSSL req \
 # rootkey.pem is used only to create root certificate
 
 EXITCODE="$?"
-if [ ! "$EXITCODE" == 0 ]; then
+if [ $EXITCODE -ne 0 ]; then
   echo "Error $EXITCODE at line $LINENO"
   exit 1
 fi
@@ -75,7 +75,7 @@ $OPENSSL x509 \
 # rootkey.pem goes into root.pem
 # rootcert.pem goes into root.pem, serverCA.pem, and server.pem
 EXITCODE="$?"
-if [ ! "$EXITCODE" == 0 ]; then
+if [ $EXITCODE -ne 0 ]; then
   echo "Error $EXITCODE at line $LINENO"
   exit 1
 fi
@@ -108,7 +108,7 @@ $OPENSSL req \
 # serverCAreq.pem is used only to create serverCAcert.pem
 
 EXITCODE="$?"
-if [ ! "$EXITCODE" == 0 ]; then
+if [ $EXITCODE -ne 0 ]; then
   echo "Error $EXITCODE at line $LINENO"
   exit 1
 fi
@@ -129,7 +129,7 @@ $OPENSSL x509 \
 # serverCAcert.pem goes into serverCA.pem and server.pem
 
 EXITCODE="$?"
-if [ ! "$EXITCODE" == 0 ]; then
+if [ $EXITCODE -ne 0 ]; then
   echo "Error $EXITCODE at line $LINENO"
   exit 1
 fi
@@ -167,7 +167,7 @@ $OPENSSL req \
 # serverreq.pem is used only to create servercert.pem
 
 EXITCODE="$?"
-if [ ! "$EXITCODE" == 0 ]; then
+if [ $EXITCODE -ne 0 ]; then
   echo "Error $EXITCODE at line $LINENO"
   exit 1
 fi
@@ -188,7 +188,7 @@ $OPENSSL x509 \
 # servercert.pem is used to create server.pem
 
 EXITCODE="$?"
-if [ ! "$EXITCODE" == 0 ]; then
+if [ $EXITCODE -ne 0 ]; then
   echo "Error $EXITCODE at line $LINENO"
   exit 1
 fi
