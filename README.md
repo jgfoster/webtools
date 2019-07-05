@@ -1,8 +1,10 @@
 WebTools for GemStone/S 64 Bit
 ========
 
-WebTools provides a HTML-based user interface for a suite of tools for GemStone/S. To use WebTools, clone the code, set an environment variable, start Topaz, login (you may need to edit the user, password, and stone name), and install the code:
+WebTools provides a HTML-based user interface for a suite of tools for GemStone/S. To use WebTools, set an environment variable, clone the code, start Topaz, login (you may need to edit the user, password, and stone name), and install the code:
 
+    export GEMSTONE="/opt/gemstone/product" # edit as appropriate
+    export PATH=$GEMSTONE/bin:$PATH
     git clone https://github.com/jgfoster/webtools.git
     cd webtools
     cp topazini .topazini #edit as appropriate
