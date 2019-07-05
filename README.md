@@ -5,16 +5,10 @@ WebTools provides a HTML-based user interface for a suite of tools for GemStone/
 
     git clone https://github.com/jgfoster/webtools.git
     cd webtools
-    export WEBTOOLS=`pwd`
-    topaz -i -l -T 50000 << EOF
-    set username: DataCurator 
-    set password: swordfish 
-    set gemstone: gs64stone
-    login
-    input $WEBTOOLS/installAndRun.tpz
-    EOF
+    cp topazini .topazini #edit as appropriate
+    ./start
 
-At this point you should be able to launch a web browser and start interacting with the tools. 
+At this point you should be able to launch a web browser and start interacting with the tools. Note that connection will be on HTTPS with a privately-issued certificate. Depending on your browser and local configuration, the initial connection might be troublesome.
 
 
 Components

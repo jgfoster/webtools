@@ -1,4 +1,4 @@
-! Copyright (c) 2011-2013 GemTalk Systems LLC. All Rights Reserved.
+! Copyright (c) 2011-2013, 2019 GemTalk Systems LLC. All Rights Reserved.
 
 doit
 Object subclass: 'Server'
@@ -483,7 +483,7 @@ set compile_env: 0
 method: Server
 serverURL
 
-	^'http://' , ((System descriptionOfSession: System session) at: 3) , ':' , socket port printString , '/'.
+	^'https://' , ((System descriptionOfSession: System session) at: 3) , ':' , socket port printString , '/'.
 %
 category: 'Web Server'
 set compile_env: 0

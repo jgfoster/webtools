@@ -1,11 +1,10 @@
 #!/bin/bash
-# Copyright (c) by GemTalk Systems, LLC 2013
+# Copyright (c) by GemTalk Systems LLC 2013, 2019
 
 # Script used to start WebTools
 
 if [ ! -f ".topazini" ]; then
-  echo "We need a .topazini file in order to log in to GemStone"
-  exit 1
+    cp topazini .topazini
 fi
 
 export WEBTOOLS=`pwd`
